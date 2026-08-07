@@ -7,6 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Department;
+use App\Models\Role;
 
 class User extends Authenticatable
 {
@@ -19,9 +21,14 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'department_id',
+        'first_name',
+        'last_name',
         'email',
         'password',
+        'is_active',
+        'employment_ended_at',
+        'must_change_password',
     ];
 
     /**
@@ -46,4 +53,22 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+public function department()
+{
+    return $this->belongsTo(Department::class);
 }
+
+public function roles()
+{
+    return $this->belongsToMany(Role::class);
+}
+
+public function hasRole(string $roleName): bool
+{
+    return $this->roles()->where('name', $roleName)->exists();
+}
+
+}
+
+

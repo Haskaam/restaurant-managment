@@ -8,14 +8,20 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $user = $request->user();
 
-        if(!$user || !$user->hasRole($role)) {
+        if (! $user) {
             abort(403);
         }
 
-        return $next($request);
+        foreach ($roles as $role) {
+            if ($user->hasRole($role)) {
+                return $next($request);
+            }
+        }
+
+        abort(403);
     }
 }

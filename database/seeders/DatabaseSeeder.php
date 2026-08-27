@@ -19,6 +19,9 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             RoleSeeder::class,
             DirectorSeeder::class,
+            CategorySeeder::class,
+            DishSeeder::class,
+            DemoUserSeeder::class,
         ]);
     }
 }

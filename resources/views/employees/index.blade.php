@@ -7,15 +7,107 @@
 
     <a class="btn btn-primary" href="{{route('employees.create')}}">Dodaj pracownika</a>
 
+<form action="{{ route('employees.index') }}" method="GET">
+
+    @csrf
+
+    <input
+        type="text"
+        name="search"
+        value="{{ request('search') }}"
+        placeholder="Szukaj pracownika..."
+    >
+
+    <input
+        type="hidden"
+        name="sort"
+        value="{{ $sort }}"
+    >
+
+    <input
+        type="hidden"
+        name="direction"
+        value="{{ $direction }}"
+    >
+
+    <button type="submit" class="btn btn-primary">
+        Szukaj
+    </button>
+
+    @if(request('search'))
+        <a
+            href="{{ route('employees.index') }}"
+            class="btn btn-secondary"
+        >
+            Wyczyść
+        </a>
+    @endif
+
+</form>
+
     <div class="table-wrapper">
         <table class="data-table">
             <tr>
-                <th>Imię</th>
-                <th>Nazwisko</th>
+                <th>
+                    <a href="{{route('employees.index', [
+                        'search' => request('search'),
+                        'sort' => 'first_name',
+                        'direction' =>
+                            $sort === 'first_name' && $direction === 'asc'
+                                ? 'desc'
+                                : 'asc'
+                        ])}}">
+                        Imię
+                    </a>
+
+                </th>
+
+                <th>
+                    <a href="{{route('employees.index', [
+                        'search' => request('search'),
+                        'sort' => 'last_name',
+                        'direction' =>
+                            $sort === 'last_name' && $direction === 'asc'
+                                ? 'desc'
+                                : 'asc'
+                        ])}}">
+                        Nazwisko
+                    </a>
+
+                </th>
+
                 <th>Dział</th>
+
                 <th>Rola</th>
-                <th>Email</th>
-                <th>Status</th>
+
+                <th>
+                    <a href="{{route('employees.index', [
+                        'search' => request('search'),
+                        'sort' => 'email',
+                        'direction' =>
+                            $sort === 'email' && $direction === 'asc'
+                                ? 'desc'
+                                : 'asc'
+                        ])}}">
+                        Email
+                    </a>
+
+                </th>
+
+                <th>
+                    <a href="{{route('employees.index', [
+                        'search' => request('search'),
+                        'sort' => 'is_active',
+                        'direction' =>
+                            $sort === 'is_active' && $direction === 'asc'
+                                ? 'desc'
+                                : 'asc'
+                        ])}}">
+                        Status
+                    </a>
+
+                </th>
+
                 <th>Akcje</th>
             </tr>
             <tbody>

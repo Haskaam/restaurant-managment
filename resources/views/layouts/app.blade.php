@@ -24,13 +24,32 @@
                     Dashboard
                 </a>
 
-                @if(Auth::user()->hasRole('director'))
+                            <!-- Dyrektor i Manager -->
+                @if(Auth::user()->hasRole('director') || Auth::user()->hasRole('manager'))
                     <a href="{{ route('employees.index') }}">
                         Pracownicy
                     </a>
 
-                    <a href="{{ route('employees.create') }}">
-                        Dodaj pracownika
+                    <a href="{{ route('dishes.index') }}">
+                        Dania restauracji
+                    </a>
+
+                    <a href="{{ route('reports.index') }}">
+                         Raporty
+                     </a>
+                @endif
+
+                            <!-- Zamówienia -->
+                @if(Auth::user()->hasRole('waiter') || Auth::user()->hasRole('manager'))
+                    <a href="{{ route('orders.index')}}">
+                        Zamówienia
+                    </a>
+                @endif
+
+                            <!-- Kuchnia -->
+                @if(Auth::user()->hasRole('kitchen_assistant') || Auth::user()->hasRole('cook') || Auth::user()->hasRole('manager'))
+                    <a href="{{ route('kitchen.index')}}">
+                        Panel kuchni
                     </a>
                 @endif
 

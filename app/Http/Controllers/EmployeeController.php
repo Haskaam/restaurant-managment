@@ -22,6 +22,14 @@ class EmployeeController extends Controller
             'role_id' => 'required|exists:roles,id',
         ]);
 
+        $currentUser = $request->user();
+
+        $role = Role::findOrFail($request->role_id);
+
+        if ($currentUser->hasRole('manager') && in_array($role->name, ['director', 'manager'])) {
+            abort(403);
+        }
+
         $user = User::create([
             'department_id' => $request->department_id,
             'first_name' => $request->first_name,
@@ -45,15 +53,67 @@ class EmployeeController extends Controller
         return view('employees.create', compact('departments', 'roles'));
     }
 
-    public function index()
-    {
-        $employees = User::with(['department', 'roles'])->get();
 
-        return view('employees.index', compact('employees'));
+
+    public function index(Request $request)
+    {
+        $query = User::with(['department', 'roles']);
+
+        if ($request->filled('search')) {
+            $query->where(function ($query) use ($request) {
+                $query->where(
+                    'first_name',
+                    'like',
+                    '%' . $request->search . '%'
+                )
+                ->orWhere(
+                    'last_name',
+                    'like',
+                    '%' . $request->search . '%'
+                )
+                ->orWhere(
+                    'email',
+                    'like',
+                    '%' . $request->search .'%'
+                );
+            });
+        }
+
+            $allowedSorts = [
+                'first_name',
+                'last_name',
+                'email',
+                'is_active',
+            ];
+
+            $sort = in_array($request->sort, $allowedSorts)
+                ? $request->sort
+                : 'last_name';
+
+            $direction = $request->direction === 'desc'
+                ? 'desc'
+                : 'asc';
+
+            $employees = $query->orderBy($sort, $direction)->get();
+
+            return view('employees.index', compact(
+                'employees',
+                'sort',
+                'direction'
+            ));
     }
 
-    public function edit(User $user)
+
+
+    public function edit(User $user, Request $request)
     {
+        $currentUser = $request->user();
+
+        if($currentUser->hasRole('manager') && ($user->hasRole('director') || $user->hasRole('manager'))) {
+            abort(403);
+        }
+
+
         $departments = Department::all();
         $roles = Role::all();
 
@@ -63,23 +123,38 @@ class EmployeeController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $request->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'department' => 'required|exists:departments,id',
-            'role' => 'required|exists:roles,id'
+        $data = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email'],
+            'department_id' => ['required', 'exists:departments,id'],
+            'role_id' => ['required', 'exists:roles,id'],
         ]);
+
+        $currentUser = $request->user();
+
+        $role = Role::findOrFail($data['role_id']);
+
+        if(
+            $currentUser->hasRole('manager')
+            && in_array($role->name, ['director', 'manager'])
+        ) {
+            abort(403);
+        }
 
         $user->update([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'department_id' => $request->department,
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'email' => $data['email'],
+            'department_id' => $data['department_id'],
         ]);
 
-        $user->roles()->sync($request->role);
+        $user->roles()->sync([$role->id]);
 
-        return redirect()->route('employees.index')->with('success', 'Dane pracownika zostały zaktualizowane.');
-    }
+        return redirect()
+            ->route('employees.index')
+            ->with('success', 'Dane pracownika zostały zaktualizowane.');
+        }
 
     public function terminate(User $user)
     {

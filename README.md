@@ -236,7 +236,34 @@ Foreign keys and database constraints are used to maintain relational integrity.
 - Git
 - GitHub
 - GitHub Actions
+- Docker
+- Docker Compose
 - SQLite for automated tests
+
+## Docker
+
+The application includes a Docker-based development environment.
+
+The environment consists of two containers:
+
+- **Application container** – PHP 8.2, Composer and Laravel
+- **Database container** – MySQL 8.0
+
+Docker Compose provides networking between the application and database containers and uses a persistent volume for MySQL data.
+
+```text
+Browser
+   ↓
+localhost:8000
+   ↓
+Laravel / PHP 8.2
+   ↓
+Docker network
+   ↓
+MySQL 8.0
+```
+
+The Laravel container connects to MySQL using the Docker service name `db`, allowing the Docker environment to remain independent from the developer's local MySQL configuration.
 
 ## Testing
 
@@ -381,6 +408,57 @@ http://127.0.0.1:8000
 php artisan test
 ```
 
+## Installation with Docker
+
+### Requirements
+
+- Git
+- Docker Desktop
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd restaurant-management
+```
+
+### 2. Start the containers
+
+```bash
+docker compose up -d --build
+```
+
+### 3. Prepare the database
+
+```bash
+docker compose exec app php artisan migrate --seed
+```
+
+### 4. Open the application
+
+```text
+http://localhost:8000
+```
+
+### 5. Login with the demo account
+
+```text
+Email: demo@restaurant.test
+Password: password
+```
+
+### 6. Run automated tests
+
+```bash
+docker compose exec app php artisan test
+```
+
+### Stop the application
+
+```bash
+docker compose down
+```
+
 ## Architecture
 
 The application follows Laravel's MVC architecture.
@@ -438,7 +516,6 @@ Instead of focusing only on CRUD operations, the application implements intercon
 
 Possible future improvements include:
 
-- Dockerized environment
 - Extended automated test coverage
 - Additional reporting and analytics
 - Pagination for larger datasets
@@ -452,4 +529,4 @@ Possible future improvements include:
 
 Core application functionality, UI/UX, reporting, search/sorting and CI are implemented.
 
-Docker support and further automated test coverage are planned as the next improvements.
+Further automated test coverage are planned as the next improvements.
